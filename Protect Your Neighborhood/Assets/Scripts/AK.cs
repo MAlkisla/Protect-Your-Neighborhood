@@ -11,11 +11,16 @@ public class AK : MonoBehaviour
     public float range;
     public Camera myCam;
     public AudioSource fireSound;
+    public AudioSource magazineChargerSound;
     public ParticleSystem fireEffect;
+    public ParticleSystem bulletTrace;
+    public ParticleSystem bloodEffect;
+
+    Animator animator;
 
     void Start()
     {
-        
+        animator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
@@ -26,18 +31,40 @@ public class AK : MonoBehaviour
             Shoot();
             inFrequencyOfShoot = Time.time + outFrequencyOfShoot;
         }
+        if (Input.GetKey(KeyCode.R))
+        {
+            animator.Play("magazinecharger");
+        }
+    }
+
+    void MagazineCharger()
+    {
+        magazineChargerSound.Play();
     }
 
     private void Shoot()
     {
         fireSound.Play();
         fireEffect.Play();
+        animator.Play("fire");
 
         RaycastHit hit;
 
-        if (Physics.Raycast(myCam.transform.position,myCam.transform.forward,out hit, range))
+        if (Physics.Raycast(myCam.transform.position, myCam.transform.forward, out hit, range))
         {
-            Debug.Log(hit.transform.name);
+            if (hit.transform.gameObject.CompareTag("Enemy"))
+                Instantiate(bloodEffect, hit.point, Quaternion.LookRotation(hit.normal));
+            else if (hit.transform.gameObject.CompareTag("TipOverObject"))
+            {
+
+                Rigidbody rg = hit.transform.gameObject.GetComponent<Rigidbody>();
+                //rg.AddForce(transform.forward * 500f);
+                rg.AddForce(-hit.normal * 500f);
+                Instantiate(bulletTrace, hit.point, Quaternion.LookRotation(hit.normal));
+            }
+
+            else
+                Instantiate(bulletTrace, hit.point, Quaternion.LookRotation(hit.normal));
         }
     }
 }
