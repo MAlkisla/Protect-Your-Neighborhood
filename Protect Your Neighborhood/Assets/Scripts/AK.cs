@@ -57,15 +57,21 @@ public class AK : MonoBehaviour
         }
         if (Input.GetKey(KeyCode.R))
         {
-            if (RemainingBullets < MagazineCapacity && TotalBulletQuantity != 0)
-            {
-                if (RemainingBullets != 0)
-                    MagazineCharging("BulletsAvailable");
-                else
-                    MagazineCharging("BulletsIsNotAvailable");
+            StartCoroutine(ReloadMagazine());
+        }
+    }
 
-                animator.Play("magazinecharger");
-            }
+    IEnumerator ReloadMagazine()
+    {
+        yield return new WaitForSeconds(.5f);
+        if (RemainingBullets < MagazineCapacity && TotalBulletQuantity != 0)
+        {
+            if (RemainingBullets != 0)
+                MagazineCharging("BulletsAvailable");
+            else
+                MagazineCharging("BulletsIsNotAvailable");
+
+            animator.Play("magazinecharger");
         }
     }
 
@@ -110,8 +116,18 @@ public class AK : MonoBehaviour
             case "BulletsAvailable":
                 if (TotalBulletQuantity <= MagazineCapacity)
                 {
-                    int currentBullets = RemainingBullets;
-                    RemainingBullets += TotalBulletQuantity;
+                    int currentBullets = RemainingBullets + TotalBulletQuantity;
+
+                    if (currentBullets > MagazineCapacity)
+                    {
+                        RemainingBullets = MagazineCapacity;
+                        TotalBulletQuantity= currentBullets - MagazineCapacity;
+                    }
+                    else
+                    {
+                        RemainingBullets += TotalBulletQuantity;
+                        TotalBulletQuantity = 0;
+                    }
                 }
                 else
                 {
